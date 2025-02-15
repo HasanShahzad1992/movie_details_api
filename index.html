@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        td{border: solid black 1px;background: teal}
+        th{background: slateblue}
+        #rest_of_page{background: navajowhite}
+        #movie_detail{color: darkmagenta;background: lightcoral}
+
+
+    </style>
+</head>
+<body>
+<div id="main_container">
+
+</div>
+<div id="rest_of_page">
+    <h1 style="display: inline-block;text-align: center">
+        movie list
+    </h1>
+    <h1 style="display: inline-block;margin-left: 260px;">
+        movie picture
+    </h1>
+    <h1 style="display: inline-block;margin-left: 260px">
+        customer reviews
+    </h1>
+</div>
+
+<div id="third_set_page">
+    <div id="movie_detail" style="display: inline-block;vertical-align: top;height: 500px;width: 300px;border: solid black">
+
+    </div>
+
+    <div id="picture_movie" style="display: inline-block;vertical-align: top;height: 500px;width: 400px;border: solid red 2px">
+
+    </div>
+
+    <div id="movie_review" style="display: inline-block;vertical-align: top;height: 500px;width: 600px;border: solid green;overflow: scroll">
+
+    </div>
+
+</div>
+
+<script>
+    let api_key="1be7645aefc5ea29e72323c1b2aec0ba";
+
+    let access_main_container=document.getElementById("main_container");
+    let access_movie_details_div=document.getElementById("movie_detail");
+    let access_movie_poster_div=document.getElementById("picture_movie");
+    let access_movie_review_div=document.getElementById("movie_review");
+
+
+    let number_of_pages=50;
+
+    let response_then_function=fetch("https://api.themoviedb.org/3/discover/movie?api_key=" + api_key +"&sort_by=popularity.desc&page=" + number_of_pages);
+    let json_data=response_then_function.then(json_parameter=>json_parameter.json());
+    let json_calculations=json_data.then(json_manipulations=>{
+
+        let create_select_element=document.createElement("select");
+
+        let create_input_element=document.createElement("input");
+        create_input_element.id = "button";
+        create_input_element.type="button";
+        create_input_element.value = "generate_movie_details";
+        create_input_element.style.fontFamily="bold";
+        create_input_element.style.fontSize = "15px";
+        create_input_element.style.borderRadius="10px";
+        create_input_element.style.backgroundColor="purple";
+        let serial_number=0;
+
+
+        for (let i=1;i<number_of_pages+1;i = i+1){
+            let list_of_movies=json_manipulations["results"];
+            for (let j=0;j<list_of_movies.length;j=j+1){
+                serial_number=serial_number+1;
+                let create_option_element=document.createElement("option");
+                let id_of_movie=list_of_movies[j]["id"];
+                let title_of_movie=list_of_movies[j]["title"];
+                create_option_element.innerHTML="("+serial_number+") " + title_of_movie;
+                create_option_element.value = id_of_movie;
+                create_select_element.append(create_option_element);
+            }
+        }
+
+        access_main_container.append(create_select_element);
+        access_main_container.append(create_input_element);
+
+
+        create_input_element.addEventListener("click",function(){
+            let id_of_movie_selected=create_select_element.value;
+            let text_of_movie_selected=create_select_element.options[create_select_element.selectedIndex].text;
+
+            let one_specfic_movie_details_url="https://api.themoviedb.org/3/movie/" + id_of_movie_selected + "?api_key=" + api_key;
+            let one_specific_movie_reviews="https://api.themoviedb.org/3/movie/" + id_of_movie_selected + "/reviews?api_key=" + api_key;
+
+            let response_then_function=fetch(one_specfic_movie_details_url);
+            let json_data=response_then_function.then(json_parameter=>json_parameter.json());
+            let json_calculations=json_data.then(json_manipulations=>{
+                let genre_list_of_movie=json_manipulations["genres"];
+                let genere_of_particular_movie="";
+                for (let i=0;i<genre_list_of_movie.length;i=i+1){
+                    let genere_text=genre_list_of_movie[i]["name"];
+                    genere_of_particular_movie=genere_of_particular_movie+ " " + genere_text;
+                }
+                let final_genere_of_movie="the movie genere areas are: " + genere_of_particular_movie;
+                let poster_of_movie=json_manipulations["poster_path"];
+                let start_date_of_movie=json_manipulations["release_date"];
+                let overview_of_movie=json_manipulations["overview"];
+
+                let create_h1_element=document.createElement("h1");
+                create_h1_element.innerHTML=text_of_movie_selected;
+
+                let create_paragraph_overview=document.createElement("p");
+                create_paragraph_overview.innerHTML=overview_of_movie;
+
+                let create_paragraph_start_date_movie=document.createElement("p");
+                create_paragraph_start_date_movie.innerHTML=start_date_of_movie;
+
+                let create_paragraph_genere_movie=document.createElement("p");
+                create_paragraph_genere_movie.innerHTML=final_genere_of_movie;
+
+                let create_image_element=document.createElement("img");
+                create_image_element.src="https://image.tmdb.org/t/p/w500/" + poster_of_movie;
+                create_image_element.style.height="500px";
+                create_image_element.style.width="400px";
+                create_image_element.style.border="solid green 3px";
+
+                access_movie_details_div.innerHTML="";
+                access_movie_poster_div.innerHTML="";
+
+                access_movie_details_div.append(create_h1_element);
+                access_movie_details_div.append(create_paragraph_overview);
+                access_movie_details_div.append(create_paragraph_start_date_movie);
+                access_movie_details_div.append(create_paragraph_genere_movie);
+
+                access_movie_poster_div.append(create_image_element);
+
+
+            });
+
+            let response_then_function_movie_reviews=fetch(one_specific_movie_reviews);
+            let json_data_movie_review=response_then_function_movie_reviews.then(json_parameter=>json_parameter.json());
+            let json_calculations_movie_review=json_data_movie_review.then(json_manipulations=>{
+                console.log(json_manipulations);
+                let list_of_results_reviews=json_manipulations["results"];
+
+                let create_table=document.createElement("table");
+                let create_thead=document.createElement("thead");
+                let create_tbody=document.createElement("tbody");
+
+                let list_of_column_names=["serial_number","author","content"];
+                let create_thead_tr=document.createElement("tr");
+                for (let i=0;i<list_of_column_names.length;i=i+1){
+                    let create_thead_th=document.createElement("th");
+                    create_thead_th.innerHTML=list_of_column_names[i];
+                    create_thead_tr.append(create_thead_th);
+                }
+                create_thead.append(create_thead_tr);
+                create_table.append(create_thead);
+
+
+                for (let i=0;i<list_of_results_reviews.length;i=i+1) {
+                    let create_tbody_tr = document.createElement("tr");
+                    for (let j = 0; j < list_of_column_names.length; j = j + 1) {
+                        let create_tbody_td = document.createElement("td");
+                        if (list_of_column_names[j] === "serial_number") {
+                            create_tbody_td.innerHTML = i+1;
+                        } else {
+                            // let column_name = list_of_column_names[j]
+                            let required_data = list_of_results_reviews[i][list_of_column_names[j]];
+                            create_tbody_td.innerHTML = required_data;
+                        }
+                        create_tbody_tr.append(create_tbody_td);
+                    }
+                    create_tbody.append(create_tbody_tr)
+                }
+                create_table.append(create_tbody);
+                access_movie_review_div.innerHTML="";
+                access_movie_review_div.append(create_table);
+
+
+
+
+
+        });
+
+
+
+        });
+    });
+
+
+</script>
+</body>
+</html>
